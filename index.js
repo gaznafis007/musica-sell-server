@@ -47,7 +47,7 @@ async function run() {
       const products = await productCollection.insertOne(product);
       res.send(products);
     });
-    app.get("/products", verifyToken, async (req, res) => {
+    app.get("/products", async (req, res) => {
       let query = {};
       if (req.query.email) {
         const email = req.query.email;
@@ -69,7 +69,7 @@ async function run() {
       const products = await productCollection.deleteOne(query);
       res.send(products);
     });
-    app.post("/orders", verifyToken, async (req, res) => {
+    app.post("/orders", async (req, res) => {
       const order = req.body;
       const orders = await orderCollection.insertOne(order);
       res.send(orders);
