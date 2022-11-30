@@ -22,6 +22,7 @@ async function run() {
     const itemCollection = client.db("musicadb").collection("items");
     const userCollection = client.db("musicadb").collection("users");
     const productCollection = client.db("musicadb").collection("products");
+    const orderCollection = client.db("musicadb").collection("orders");
     app.get("/items", async (req, res) => {
       const query = {};
       const items = await itemCollection.find(query).toArray();
@@ -47,6 +48,20 @@ async function run() {
       const query = { category: name };
       const products = await productCollection.find(query).toArray();
       res.send(products);
+    });
+    app.post("/orders", async (req, res) => {
+      const order = req.body;
+      const orders = await orderCollection.insertOne(order);
+      res.send(orders);
+    });
+    app.get("/orders", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        const email = req.query.email;
+        query = { email: email };
+      }
+      const orders = await orderCollection.find(query).toArray();
+      res.send(orders);
     });
     app.post("/users", async (req, res) => {
       const user = req.body;
