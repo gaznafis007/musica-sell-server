@@ -23,6 +23,20 @@ async function run() {
     const userCollection = client.db("musicadb").collection("users");
     const productCollection = client.db("musicadb").collection("products");
     const orderCollection = client.db("musicadb").collection("orders");
+    const verifyToken = (req, res, next) => {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).send({ message: "Unauthorized Access" });
+      }
+      const token = authHeader.split(" ")[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+        if (error) {
+          return res.status(401).send("Unauthorized Access");
+        }
+        req.decoded = decoded;
+      });
+      next();
+    };
     app.get("/items", async (req, res) => {
       const query = {};
       const items = await itemCollection.find(query).toArray();
@@ -33,7 +47,7 @@ async function run() {
       const products = await productCollection.insertOne(product);
       res.send(products);
     });
-    app.get("/products", async (req, res) => {
+    app.get("/products", verifyToken, async (req, res) => {
       let query = {};
       if (req.query.email) {
         const email = req.query.email;
@@ -55,7 +69,7 @@ async function run() {
       const products = await productCollection.deleteOne(query);
       res.send(products);
     });
-    app.post("/orders", async (req, res) => {
+    app.post("/orders", verifyToken, async (req, res) => {
       const order = req.body;
       const orders = await orderCollection.insertOne(order);
       res.send(orders);
@@ -82,6 +96,13 @@ async function run() {
       }
       const users = await userCollection.find(query).toArray();
       res.send(users);
+    });
+    app.post("/jwt", (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
+        expiresIn: "2days",
+      });
+      res.send({ token });
     });
   } finally {
   }
