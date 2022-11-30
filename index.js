@@ -20,10 +20,40 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const itemCollection = client.db("musicadb").collection("items");
+    const userCollection = client.db("musicadb").collection("users");
+    const productCollection = client.db("musicadb").collection("products");
     app.get("/items", async (req, res) => {
       const query = {};
       const items = await itemCollection.find(query).toArray();
       res.send(items);
+    });
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const products = await productCollection.insertOne(product);
+      res.send(products);
+    });
+    app.get("/products", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        const email = req.query.email;
+        query = { sellerEmail: email };
+      }
+      const products = await productCollection.find(query).toArray();
+      res.send(products);
+    });
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const users = await userCollection.insertOne(user);
+      res.send(users);
+    });
+    app.get("/users", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        const email = req.query.email;
+        query = { email: email };
+      }
+      const users = await userCollection.find(query).toArray();
+      res.send(users);
     });
   } finally {
   }
